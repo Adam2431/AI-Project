@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-
 public class State {
     int initialProsperity;
     int initialFood;
