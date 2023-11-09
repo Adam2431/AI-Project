@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class State {
     int initialProsperity;
     int initialFood;
@@ -23,82 +25,126 @@ public class State {
     int energyUseBUILD2;
     int prosperityBUILD2;
 
-    public State(String initalState){
+    int food;
+    int materials;
+    int energy;
+    int prosperity;
+    int moneySpent;
+
+    int pathCost;
+    int heuristicOne;
+    int heuristicTwo;
+
+    ArrayList<ArrayList<String>> requests;
+
+    public State(String initalState) {
+
         char[] stateArray = initalState.toCharArray();
         int parsedSoFar = 0;
         int innerParsedSoFar = 0;
         String innerParsed = "";
         for (char character : stateArray) {
-            if(character == ',' || character == ';'){
+            if (character == ',' || character == ';') {
                 switch (innerParsedSoFar) {
                     case 0:
-                        if(parsedSoFar == 0)
+                        if (parsedSoFar == 0)
                             initialProsperity = Integer.parseInt(innerParsed);
-                        if(parsedSoFar == 1)
+                        if (parsedSoFar == 1)
                             initialFood = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 2)
+                        else if (parsedSoFar == 2)
                             unitPriceFood = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 3)
+                        else if (parsedSoFar == 3)
                             amountRequestFood = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 4)
+                        else if (parsedSoFar == 4)
                             amountRequestMaterials = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 5)
+                        else if (parsedSoFar == 5)
                             amountRequestEnergy = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 6)
+                        else if (parsedSoFar == 6)
                             priceBUILD1 = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 7)
-                            materialsUseBUILD1 = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 8)
+                        else if (parsedSoFar == 7)
                             priceBUILD2 = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 9)
-                            materialsUseBUILD2 = Integer.parseInt(innerParsed);
                         break;
                     case 1:
-                        if(parsedSoFar == 1)
+                        if (parsedSoFar == 1)
                             initialMaterials = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 2)
+                        else if (parsedSoFar == 2)
                             unitPriceMaterials = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 3)
+                        else if (parsedSoFar == 3)
                             delayRequestFood = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 4)
+                        else if (parsedSoFar == 4)
                             delayRequestMaterials = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 5)
+                        else if (parsedSoFar == 5)
                             delayRequestEnergy = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 6)
+                        else if (parsedSoFar == 6)
                             foodUseBUILD1 = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 7)
-                            energyUseBUILD1 = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 8)
+                        else if (parsedSoFar == 7)
                             foodUseBUILD2 = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 9)
-                            energyUseBUILD2 = Integer.parseInt(innerParsed);
                         break;
                     case 2:
-                        if(parsedSoFar == 1)
+                        if (parsedSoFar == 1)
                             initialEnergy = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 2)
+                        else if (parsedSoFar == 2)
                             unitPriceEnergy = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 7)
+                        else if (parsedSoFar == 6)
+                            materialsUseBUILD1 = Integer.parseInt(innerParsed);
+                        else if (parsedSoFar == 7)
+                            materialsUseBUILD2 = Integer.parseInt(innerParsed);
+                        break;
+                    case 3:
+                        if (parsedSoFar == 6)
+                            energyUseBUILD1 = Integer.parseInt(innerParsed);
+                        else if (parsedSoFar == 7)
+                            energyUseBUILD2 = Integer.parseInt(innerParsed);
+                        break;
+                    case 4:
+                        if (parsedSoFar == 6)
                             prosperityBUILD1 = Integer.parseInt(innerParsed);
-                        else if(parsedSoFar == 9)
+                        else if (parsedSoFar == 7)
                             prosperityBUILD2 = Integer.parseInt(innerParsed);
                         break;
                 }
                 innerParsedSoFar++;
                 innerParsed = "";
-            }  
-            else{
+            } else {
                 innerParsed += character;
             }
-            if(character == ';'){
+            if (character == ';') {
                 parsedSoFar++;
                 innerParsedSoFar = 0;
                 innerParsed = "";
             }
         }
+
+        food = initialFood;
+        materials = initialMaterials;
+        energy = initialEnergy;
+        prosperity = initialProsperity;
+        moneySpent = 0;
+        requests = new ArrayList<ArrayList<String>>();
     }
 
-    public String toString(){
+    public State(State state) {
+        food = state.food;
+        materials = state.materials;
+        energy = state.energy;
+        prosperity = state.prosperity;
+        moneySpent = state.moneySpent;
+        pathCost = state.pathCost;
+        heuristicOne = state.heuristicOne;
+        heuristicTwo = state.heuristicTwo;
+        requests = new ArrayList<ArrayList<String>>();
+        for (int i = 0; i < state.requests.size(); i++) {
+            ArrayList<String> request = new ArrayList<String>();
+            for (int j = 0; j < state.requests.get(i).size(); j++) {
+                request.add(state.requests.get(i).get(j));
+                request.add(state.requests.get(i).get(j));
+                request.add(state.requests.get(i).get(j));
+            }
+            requests.add(request);
+        }
+    }
+
+    public String toString() {
         String state = "";
 
         state += "Initial Prosperity: " + initialProsperity + "\n";
@@ -124,7 +170,7 @@ public class State {
         state += "Materials Use BUILD2: " + materialsUseBUILD2 + "\n";
         state += "Energy Use BUILD2: " + energyUseBUILD2 + "\n";
         state += "Prosperity BUILD2: " + prosperityBUILD2 + "\n";
-        
+
         return state;
     }
 }
