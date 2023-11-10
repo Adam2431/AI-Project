@@ -1,3 +1,4 @@
+package code;
 public class Node {
     State state;
     Node parent;
@@ -21,7 +22,7 @@ public class Node {
     }
 
     public boolean goalTest() {
-        if (this.state.prosperity == 100) {
+        if (this.state.prosperity >= 100) {
             return true;
         }
         return false;

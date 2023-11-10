@@ -1,3 +1,4 @@
+package code;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -5,14 +6,20 @@ public class GenericSearch {
 
     public static int nodesExpanded = 0;
 
+    public static String expansionSequence = "";
+
     public static Node generalSearch(String strategy) {
         ArrayList<Node> nodes = new ArrayList<Node>();
         nodes.add(new Node(Main.agent.state, null, null, 0, 0, 0, 0));
         while (!nodes.isEmpty()) {
             Node node = nodes.remove(0);
+
+            expansionSequence += node.action + " Depth " + node.depth;
             if (node.goalTest()) {
                 return node;
             }
+            expansionSequence += " --> ";
+            System.out.println();
             nodes = addToQueue(strategy, nodes, expandNode(node));
         }
         return null;
@@ -20,11 +27,11 @@ public class GenericSearch {
 
     public static ArrayList<Node> addToQueue(String strategy, ArrayList<Node> oldNodes, ArrayList<Node> newNodes) {
         switch (strategy) {
-            case "BFS": {
+            case "BF": {
                 oldNodes.addAll(newNodes);
                 return oldNodes;
             }
-            case "DFS": {
+            case "DF": {
                 newNodes.addAll(oldNodes);
                 return newNodes;
             }
@@ -71,6 +78,7 @@ public class GenericSearch {
             }
 
             default:
+                System.out.println("Invalid Strategy");
                 return oldNodes;
 
         }
@@ -107,7 +115,9 @@ public class GenericSearch {
     public static void handleRequests(State state) {
         int delay;
         int amount;
+        
         for (int i = 0; i < state.requests.size(); i++) {
+            System.out.println(state.requests);
             delay = Integer.parseInt(state.requests.get(i).get(2));
             if (delay == 0) {
                 amount = Integer.parseInt(state.requests.get(i).get(1));

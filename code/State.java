@@ -1,3 +1,4 @@
+package code;
 import java.util.ArrayList;
 
 public class State {
@@ -137,14 +138,12 @@ public class State {
             ArrayList<String> request = new ArrayList<String>();
             for (int j = 0; j < state.requests.get(i).size(); j++) {
                 request.add(state.requests.get(i).get(j));
-                request.add(state.requests.get(i).get(j));
-                request.add(state.requests.get(i).get(j));
             }
             requests.add(request);
         }
     }
 
-    public String toString() {
+    public String toString2() {
         String state = "";
 
         state += "Initial Prosperity: " + initialProsperity + "\n";
@@ -170,6 +169,22 @@ public class State {
         state += "Materials Use BUILD2: " + materialsUseBUILD2 + "\n";
         state += "Energy Use BUILD2: " + energyUseBUILD2 + "\n";
         state += "Prosperity BUILD2: " + prosperityBUILD2 + "\n";
+
+        return state;
+    }
+
+    public String toString() {
+        String state = "";
+
+        state += "Food: " + food + "\n";
+        state += "Materials: " + materials + "\n";
+        state += "Energy: " + energy + "\n";
+        state += "Prosperity: " + prosperity + "\n";
+        state += "Money Spent: " + moneySpent + "\n";
+        state += "Path Cost: " + pathCost + "\n";
+        state += "Heuristic One: " + heuristicOne + "\n";
+        state += "Heuristic Two: " + heuristicTwo + "\n";
+        state += "Requests: " + requests + "\n";
 
         return state;
     }

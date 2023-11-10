@@ -1,3 +1,4 @@
+package code;
 import java.util.ArrayList;
 
 public class Agent {
@@ -96,7 +97,7 @@ public class Agent {
 
     public ArrayList<String> WAIT() {
 
-        if (state.food > 0 & state.materials > 0 & state.energy > 0) {
+        if (state.food > 0 && state.materials > 0 && state.energy > 0) {
             state.food--;
             state.materials--;
             state.energy--;
@@ -109,9 +110,8 @@ public class Agent {
     }
 
     public ArrayList<String> BUILD1(int food, int materials, int energy, int prosperity) {
-
-        if (state.food > Main.InitialState.foodUseBUILD1 & state.materials > Main.InitialState.materialsUseBUILD1
-                & state.energy > Main.InitialState.prosperityBUILD1) {
+        if (state.food > Main.InitialState.foodUseBUILD1 && state.materials > Main.InitialState.materialsUseBUILD1
+                && state.energy > Main.InitialState.energyUseBUILD1) {
             state.food -= Main.InitialState.foodUseBUILD1;
             state.materials -= Main.InitialState.materialsUseBUILD1;
             state.energy -= Main.InitialState.energyUseBUILD1;
@@ -127,13 +127,12 @@ public class Agent {
     }
 
     public ArrayList<String> BUILD2(int food, int materials, int energy, int prosperity) {
-        if (state.food > Main.InitialState.foodUseBUILD2 & state.materials > Main.InitialState.materialsUseBUILD2
-                & state.energy > Main.InitialState.prosperityBUILD2) {
+        if (state.food > Main.InitialState.foodUseBUILD2 && state.materials > Main.InitialState.materialsUseBUILD2
+                && state.energy > Main.InitialState.energyUseBUILD2) {
             state.food -= Main.InitialState.foodUseBUILD2;
             state.materials -= Main.InitialState.materialsUseBUILD2;
             state.energy -= Main.InitialState.energyUseBUILD2;
             state.prosperity += Main.InitialState.prosperityBUILD2;
-
             state.moneySpent += Main.InitialState.unitPriceFood * Main.InitialState.foodUseBUILD2;
             state.moneySpent += Main.InitialState.unitPriceMaterials * Main.InitialState.materialsUseBUILD2;
             state.moneySpent += Main.InitialState.unitPriceEnergy * Main.InitialState.energyUseBUILD2;
