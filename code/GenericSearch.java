@@ -5,30 +5,34 @@ import java.util.Comparator;
 
 public class GenericSearch {
 
-    public static int nodesExpanded = 0;
+    public Solution generalSearch(String strategy, Boolean visualize, Agent agent, State InitialState) {
 
-    public static String expansionSequence = "";
+        Solution solution = new Solution(null, "", 0, 0);
 
-    public static Node generalSearch(String strategy) {
         ArrayList<Node> nodes = new ArrayList<Node>();
-        nodes.add(new Node(Main.agent.state, null, null, 0, 0, 0, 0));
+        nodes.add(new Node(agent.state, null, null, 0, 0, 0, 0));
         while (!nodes.isEmpty()) {
             Node node = nodes.remove(0);
 
-            expansionSequence += node.action + " Depth " + node.depth;
+            solution.expansionSequence += node.action + " Depth " + node.depth;
             if (node.goalTest()) {
-                return node;
+                solution.node = node;
+                return solution;
             }
-            expansionSequence += " --> ";
-            if (Main.visualize) {
+            System.out.println(solution.nodesExpanded);
+            solution.expansionSequence += " --> ";
+            if (visualize) {
                 System.out.println();
             }
-            nodes = addToQueue(strategy, nodes, expandNode(node));
+            nodes = addToQueue(strategy, nodes, expandNode(node, solution, agent, InitialState, visualize), solution,
+                    agent, InitialState, visualize);
         }
+
         return null;
     }
 
-    public static ArrayList<Node> addToQueue(String strategy, ArrayList<Node> oldNodes, ArrayList<Node> newNodes) {
+    public ArrayList<Node> addToQueue(String strategy, ArrayList<Node> oldNodes, ArrayList<Node> newNodes,
+            Solution solution, Agent agent, State InitialState, Boolean visualize) {
         switch (strategy) {
             case "BF": {
                 oldNodes.addAll(newNodes);
@@ -40,18 +44,18 @@ public class GenericSearch {
             }
             case "ID": {
 
-                // if (!newNodes.isEmpty() && newNodes.get(0).depth <= currlevel) {
-                // newNodes.addAll(oldNodes);
-                // return newNodes;
-                // } else if (oldNodes.isEmpty()) {
-                // currlevel += 1;
-                // states = new Hashtable<String, String>();
-                // oldNodes.add(new SearchTreeNode(this.initialState, null, null, 0, 0, 0, 0));
-                // // new queue with the
-                // // root node only
-                // return oldNodes;
-                // }
-                // return oldNodes;
+                if (!newNodes.isEmpty() && newNodes.get(0).depth <= solution.currlevel) {
+                    newNodes.addAll(oldNodes);
+                    return newNodes;
+                } else if (oldNodes.isEmpty()) {
+                    solution.currlevel += 1;
+                    agent.state = InitialState;
+                    oldNodes.add(new Node(agent.state, null, null, 0, 0, 0, 0));
+                    // new queue with the
+                    // root node only
+                    return oldNodes;
+                }
+                return oldNodes;
 
             }
 
@@ -81,7 +85,7 @@ public class GenericSearch {
             }
 
             default:
-                if (Main.visualize) {
+                if (visualize) {
                     System.out.println("Invalid Strategy");
                 }
                 return oldNodes;
@@ -90,34 +94,35 @@ public class GenericSearch {
 
     }
 
-    public static ArrayList<Node> expandNode(Node node) {
+    public ArrayList<Node> expandNode(Node node, Solution solution, Agent agent, State InitialState,
+            Boolean visualize) {
         ArrayList<Node> nodes = new ArrayList<Node>();
-        nodesExpanded += 1;
+        solution.nodesExpanded += 1;
         if (node.state.moneySpent > 100000) {
-            if (Main.visualize) {
+            if (visualize) {
                 System.out.println("Money Spent Exceeded!");
             }
-        } else if (stateRepeated(node.state)) {
-            if (Main.visualize) {
+        } else if (stateRepeated(node.state, agent)) {
+            if (visualize) {
                 System.out.println("State Repeated!");
             }
         } else {
-            for (int i = 0; i < Main.agent.actions.size(); i++) {
+            for (int i = 0; i < agent.actions.size(); i++) {
                 State state = new State(node.state);
-                Main.agent.state = state;
-                boolean actionDone = Main.agent.doAction(node.state, Main.agent.actions.get(i));
+                agent.state = state;
+                boolean actionDone = agent.doAction(node.state, agent.actions.get(i), InitialState);
                 if (actionDone) {
-                    Node addedNode = new Node(state, node, Main.agent.actions.get(i),
+                    Node addedNode = new Node(state, node, agent.actions.get(i),
                             node.depth + 1,
-                            Main.agent.state.pathCost,
-                            Main.agent.state.heuristicOne, Main.agent.state.heuristicTwo);
-                    if (Main.visualize) {
+                            agent.state.pathCost,
+                            agent.state.heuristicOne, agent.state.heuristicTwo);
+                    if (visualize) {
                         System.out.println(addedNode);
-                        System.out.println(Main.agent);
+                        System.out.println(agent);
                     }
                     nodes.add(addedNode);
                 } else {
-                    if (Main.visualize) {
+                    if (visualize) {
                         System.out.println("Not Enough Resources or Invalid Action");
                     }
                 }
@@ -127,33 +132,33 @@ public class GenericSearch {
 
     }
 
-    public static boolean stateRepeated(State state) {
-        if (Main.agent.states.containsKey(state.hashString())) {
+    public boolean stateRepeated(State state, Agent agent) {
+        if (agent.states.containsKey(state.hashString())) {
             return true;
         }
-        Main.agent.states.put(state.hashString(), state);
+        agent.states.put(state.hashString(), state);
         return false;
     }
 
-    public static ArrayList<Node> sort(ArrayList<Node> nodes) {
+    public ArrayList<Node> sort(ArrayList<Node> nodes) {
 
         nodes.sort(Comparator.comparing(node -> node.state.moneySpent));
         return nodes;
     }
 
-    private static ArrayList<Node> sortAHeuristicTwo(ArrayList<Node> oldNodes) {
+    private ArrayList<Node> sortAHeuristicTwo(ArrayList<Node> oldNodes) {
         return null;
     }
 
-    private static ArrayList<Node> sortAHeuristicOne(ArrayList<Node> oldNodes) {
+    private ArrayList<Node> sortAHeuristicOne(ArrayList<Node> oldNodes) {
         return null;
     }
 
-    private static ArrayList<Node> sortHeuristicTwo(ArrayList<Node> oldNodes) {
+    private ArrayList<Node> sortHeuristicTwo(ArrayList<Node> oldNodes) {
         return null;
     }
 
-    private static ArrayList<Node> sortHeuristicOne(ArrayList<Node> oldNodes) {
+    private ArrayList<Node> sortHeuristicOne(ArrayList<Node> oldNodes) {
         return null;
     }
 }

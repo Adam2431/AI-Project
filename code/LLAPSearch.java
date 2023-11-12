@@ -3,24 +3,32 @@ package code;
 public class LLAPSearch extends GenericSearch {
     public static String solve(String initalState, String strategy, Boolean visualize) {
 
-        Main.visualize = visualize;
+        State InitialState = new State(initalState);
+        Agent agent = new Agent(InitialState);
+        LLAPSearch llapSearch = new LLAPSearch();
 
-        Main.InitialState = new State(initalState);
-        Main.agent = new Agent(Main.InitialState);
-        Node goalNode = GenericSearch.generalSearch(strategy);
+        Solution solution = llapSearch.generalSearch(strategy, visualize, agent, InitialState);
+        Node goalNode = solution.node;
         if (visualize) {
-            System.out.println("Initial State: " + Main.InitialState);
+            System.out.println("Initial State: " + InitialState);
             System.out.println("Expansion Sequence: ");
-            System.out.print(GenericSearch.expansionSequence);
+            System.out.println(solution.expansionSequence);
         }
         if (goalNode != null) {
             if (visualize) {
                 System.out.println("Solution Found!");
                 System.out.println("Path Cost: " + goalNode.pathCost);
-                System.out.println("Nodes Expanded: " + GenericSearch.nodesExpanded);
+                System.out.println("Nodes Expanded: " + solution.nodesExpanded);
+                System.out.println();
+                System.out.println();
             }
-            return recursivePrint(goalNode, visualize) + ";" + goalNode.state.moneySpent + ";"
-                    + GenericSearch.nodesExpanded;
+            if (visualize) {
+                llapSearch.recursivePrintVisualize(goalNode);
+                System.out.println();
+                System.out.println();
+            }
+            return llapSearch.recursivePrint(goalNode) + ";" + goalNode.state.moneySpent + ";"
+                    + solution.nodesExpanded;
         } else {
             if (visualize)
                 System.out.println("NOSOLUTION");
@@ -28,15 +36,19 @@ public class LLAPSearch extends GenericSearch {
         }
     }
 
-    static String recursivePrint(Node node, Boolean visualize) {
+    String recursivePrint(Node node) {
         if (node.parent.parent == null) {
-            if (visualize)
-                System.out.print(node.action + " Depth " + node.depth);
             return node.action;
         }
+        return (recursivePrint(node.parent) + "," + node.action);
+    }
 
-        if (visualize)
-            System.out.print(node.action + " Depth " + node.depth + " <-- ");
-        return (recursivePrint(node.parent, visualize) + "," + node.action);
+    void recursivePrintVisualize(Node node) {
+        if (node.parent.parent == null) {
+            System.out.print(node.action + " Depth " + node.depth);
+            return;
+        }
+        recursivePrintVisualize(node.parent);
+        System.out.print(" --> " + node.action + " Depth " + node.depth);
     }
 }
