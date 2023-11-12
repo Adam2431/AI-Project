@@ -1,12 +1,10 @@
 package code;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Agent {
     State state;
     ArrayList<String> actions;
-    HashMap<String, State> states;
 
     public Agent(State state) {
         this.state = state;
@@ -17,7 +15,6 @@ public class Agent {
         actions.add("RequestMaterials");
         actions.add("RequestEnergy");
         actions.add("WAIT");
-        states = new HashMap<String, State>();
     }
 
     public boolean doAction(State state, String action, State InitialState) {

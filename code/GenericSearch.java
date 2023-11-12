@@ -2,14 +2,18 @@ package code;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 
 public class GenericSearch {
+
+    HashSet<String> states;
 
     public Solution generalSearch(String strategy, Boolean visualize, Agent agent, State InitialState) {
 
         Solution solution = new Solution(null, "", 0, 0);
 
         ArrayList<Node> nodes = new ArrayList<Node>();
+        states = new HashSet<String>();
         nodes.add(new Node(agent.state, null, null, 0, 0, 0, 0));
         while (!nodes.isEmpty()) {
             Node node = nodes.remove(0);
@@ -18,6 +22,12 @@ public class GenericSearch {
             if (node.goalTest()) {
                 solution.node = node;
                 return solution;
+            }
+            if (stateRepeated(node.state, states)) {
+                if (visualize) {
+                    System.out.println("State Repeated!");
+                }
+                continue;
             }
             System.out.println(solution.nodesExpanded);
             solution.expansionSequence += " --> ";
@@ -102,10 +112,6 @@ public class GenericSearch {
             if (visualize) {
                 System.out.println("Money Spent Exceeded!");
             }
-        } else if (stateRepeated(node.state, agent)) {
-            if (visualize) {
-                System.out.println("State Repeated!");
-            }
         } else {
             for (int i = 0; i < agent.actions.size(); i++) {
                 State state = new State(node.state);
@@ -132,11 +138,11 @@ public class GenericSearch {
 
     }
 
-    public boolean stateRepeated(State state, Agent agent) {
-        if (agent.states.containsKey(state.hashString())) {
+    public boolean stateRepeated(State state, HashSet<String> states) {
+        if (states.contains(state.hashString())) {
             return true;
         }
-        agent.states.put(state.hashString(), state);
+        states.add(state.hashString());
         return false;
     }
 
