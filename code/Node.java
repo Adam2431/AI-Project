@@ -1,4 +1,5 @@
 package code;
+
 public class Node {
     State state;
     Node parent;
@@ -30,5 +31,12 @@ public class Node {
 
     public String toString() {
         return "Action: " + action + "\n" + "Depth: " + depth;
+    }
+
+    public boolean equals(Node node) {
+        if (this.state.equals(node.state))
+            return true;
+        else
+            return false;
     }
 }

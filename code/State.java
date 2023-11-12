@@ -1,5 +1,4 @@
 package code;
-import java.util.ArrayList;
 
 public class State {
     int initialProsperity;
@@ -31,12 +30,10 @@ public class State {
     int energy;
     int prosperity;
     int moneySpent;
-
+    Request request;
     int pathCost;
     int heuristicOne;
     int heuristicTwo;
-
-    ArrayList<ArrayList<String>> requests;
 
     public State(String initalState) {
 
@@ -121,7 +118,7 @@ public class State {
         energy = initialEnergy;
         prosperity = initialProsperity;
         moneySpent = 0;
-        requests = new ArrayList<ArrayList<String>>();
+        request = new Request("", 0, 0);
     }
 
     public State(State state) {
@@ -133,14 +130,7 @@ public class State {
         pathCost = state.pathCost;
         heuristicOne = state.heuristicOne;
         heuristicTwo = state.heuristicTwo;
-        requests = new ArrayList<ArrayList<String>>();
-        for (int i = 0; i < state.requests.size(); i++) {
-            ArrayList<String> request = new ArrayList<String>();
-            for (int j = 0; j < state.requests.get(i).size(); j++) {
-                request.add(state.requests.get(i).get(j));
-            }
-            requests.add(request);
-        }
+        request = new Request(state.request.type, state.request.amount, state.request.delay);
     }
 
     public String toString2() {
@@ -173,6 +163,19 @@ public class State {
         return state;
     }
 
+    public String hashString() {
+        String hash = "";
+        hash += food + ",";
+        hash += materials + ",";
+        hash += energy + ",";
+        hash += prosperity + ",";
+        hash += moneySpent + ",";
+        hash += request.type + ",";
+        hash += request.amount + ",";
+        hash += request.delay + ",";
+        return hash;
+    }
+
     public String toString() {
         String state = "";
 
@@ -184,8 +187,19 @@ public class State {
         state += "Path Cost: " + pathCost + "\n";
         state += "Heuristic One: " + heuristicOne + "\n";
         state += "Heuristic Two: " + heuristicTwo + "\n";
-        state += "Requests: " + requests + "\n";
+        state += "Request Type: " + request.type + "\n";
+        state += "Request Amount: " + request.amount + "\n";
+        state += "Request Delay: " + request.delay + "\n";
 
         return state;
+    }
+
+    public boolean equals(State state) {
+        if (this.food == state.food && this.materials == state.materials && this.energy == state.energy
+                && this.prosperity == state.prosperity && this.moneySpent == state.moneySpent
+                && this.request.equals(state.request))
+            return true;
+        else
+            return false;
     }
 }

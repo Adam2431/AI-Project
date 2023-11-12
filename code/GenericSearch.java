@@ -1,4 +1,5 @@
 package code;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -19,7 +20,9 @@ public class GenericSearch {
                 return node;
             }
             expansionSequence += " --> ";
-            System.out.println();
+            if (Main.visualize) {
+                System.out.println();
+            }
             nodes = addToQueue(strategy, nodes, expandNode(node));
         }
         return null;
@@ -78,7 +81,9 @@ public class GenericSearch {
             }
 
             default:
-                System.out.println("Invalid Strategy");
+                if (Main.visualize) {
+                    System.out.println("Invalid Strategy");
+                }
                 return oldNodes;
 
         }
@@ -88,62 +93,51 @@ public class GenericSearch {
     public static ArrayList<Node> expandNode(Node node) {
         ArrayList<Node> nodes = new ArrayList<Node>();
         nodesExpanded += 1;
-        handleRequests(node.state);
-        for (int i = 0; i < Main.agent.actions.size(); i++) {
-            State state = new State(node.state);
-            Main.agent.state = state;
-            ArrayList<String> newRequest = Main.agent.doAction(node.state, Main.agent.actions.get(i));
-            if (newRequest != null) {
-                if (!newRequest.isEmpty()) {
-                    state.requests.add(newRequest);
+        if (node.state.moneySpent > 100000) {
+            if (Main.visualize) {
+                System.out.println("Money Spent Exceeded!");
+            }
+        } else if (stateRepeated(node.state)) {
+            if (Main.visualize) {
+                System.out.println("State Repeated!");
+            }
+        } else {
+            for (int i = 0; i < Main.agent.actions.size(); i++) {
+                State state = new State(node.state);
+                Main.agent.state = state;
+                boolean actionDone = Main.agent.doAction(node.state, Main.agent.actions.get(i));
+                if (actionDone) {
+                    Node addedNode = new Node(state, node, Main.agent.actions.get(i),
+                            node.depth + 1,
+                            Main.agent.state.pathCost,
+                            Main.agent.state.heuristicOne, Main.agent.state.heuristicTwo);
+                    if (Main.visualize) {
+                        System.out.println(addedNode);
+                        System.out.println(Main.agent);
+                    }
+                    nodes.add(addedNode);
+                } else {
+                    if (Main.visualize) {
+                        System.out.println("Not Enough Resources or Invalid Action");
+                    }
                 }
-                Node addedNode = new Node(state, node, Main.agent.actions.get(i),
-                        node.depth + 1,
-                        Main.agent.state.pathCost,
-                        Main.agent.state.heuristicOne, Main.agent.state.heuristicTwo);
-                System.out.println(addedNode);
-                System.out.println(Main.agent);
-                nodes.add(addedNode);
-            } else {
-                System.out.println("Not Enough Resources");
             }
         }
         return nodes;
 
     }
 
-    public static void handleRequests(State state) {
-        int delay;
-        int amount;
-        
-        for (int i = 0; i < state.requests.size(); i++) {
-            System.out.println(state.requests);
-            delay = Integer.parseInt(state.requests.get(i).get(2));
-            if (delay == 0) {
-                amount = Integer.parseInt(state.requests.get(i).get(1));
-                if (state.requests.get(i).get(0).equals("food")) {
-                    state.food += amount;
-                    state.requests.remove(i);
-                    i--;
-                } else if (state.requests.get(i).get(0).equals("materials")) {
-                    state.materials += amount;
-                    state.requests.remove(i);
-                    i--;
-                } else if (state.requests.get(i).get(0).equals("energy")) {
-                    state.energy += amount;
-                    state.requests.remove(i);
-                    i--;
-                }
-            } else {
-                delay--;
-                state.requests.get(i).set(2, Integer.toString(delay));
-            }
+    public static boolean stateRepeated(State state) {
+        if (Main.agent.states.containsKey(state.hashString())) {
+            return true;
         }
+        Main.agent.states.put(state.hashString(), state);
+        return false;
     }
 
     public static ArrayList<Node> sort(ArrayList<Node> nodes) {
 
-        nodes.sort(Comparator.comparing(node -> node.pathCost));
+        nodes.sort(Comparator.comparing(node -> node.state.moneySpent));
         return nodes;
     }
 
