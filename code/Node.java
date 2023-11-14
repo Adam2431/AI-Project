@@ -5,30 +5,13 @@ public class Node implements Comparable<Node> {
     Node parent;
     String action;
     int depth;
-    int heuristicOne;
-    int heuristicTwo;
 
-    public Node(State state, Node parent, String action, int depth,
-            int heuristicOne,
-            int heuristicTwo) {
+    public Node(State state, Node parent, String action, int depth) {
         super();
         this.state = state;
         this.parent = parent;
         this.action = action;
         this.depth = depth;
-        this.heuristicOne = heuristicOne;
-        this.heuristicTwo = heuristicTwo;
-    }
-
-    public boolean goalTest() {
-        if (this.state.prosperity >= 100) {
-            return true;
-        }
-        return false;
-    }
-
-    public String toString() {
-        return "Action: " + action + "\n" + "Depth: " + depth;
     }
 
     public boolean equals(Node node) {
@@ -42,23 +25,31 @@ public class Node implements Comparable<Node> {
     public int compareTo(Node node) {
         // TODO Auto-generated method stub
 
-        if (GenericSearch.staticStrategy.equals("DF")) {
-            return Integer.compare(this.depth, node.depth);
-        }
         if (GenericSearch.staticStrategy.equals("GR1")) {
-            return Integer.compare(node.heuristicOne, this.heuristicOne);
+            return Integer.compare(node.state.heuristicOne, this.state.heuristicOne);
         } else if (GenericSearch.staticStrategy.equals("GR2")) {
-            return Integer.compare(node.heuristicTwo, this.heuristicTwo);
+            return Integer.compare(node.state.heuristicTwo, this.state.heuristicTwo);
         } else if (GenericSearch.staticStrategy.equals("AS1")) {
-            return Integer.compare(node.heuristicOne + node.state.moneySpent,
-                    this.heuristicOne + this.state.moneySpent);
+            return Integer.compare(node.state.heuristicOne + node.state.moneySpent,
+                    this.state.heuristicOne + this.state.moneySpent);
         } else if (GenericSearch.staticStrategy.equals("AS2")) {
-            return Integer.compare(node.heuristicTwo + node.state.moneySpent,
-                    this.heuristicTwo + this.state.moneySpent);
+            return Integer.compare(node.state.heuristicTwo + node.state.moneySpent,
+                    this.state.heuristicTwo + this.state.moneySpent);
         } else if (GenericSearch.staticStrategy.equals("UC")) {
             return Integer.compare(node.state.moneySpent, this.state.moneySpent);
         } else {
             return 0;
         }
+    }
+
+    public boolean goalTest() {
+        if (this.state.prosperity >= 100) {
+            return true;
+        }
+        return false;
+    }
+
+    public String toString() {
+        return "Action: " + action + "\n" + "Depth: " + depth;
     }
 }

@@ -17,35 +17,35 @@ public class Agent {
         actions.add("WAIT");
     }
 
-    public boolean doAction(State state, String action, State InitialState) {
+    public boolean doAction(State state, String action) {
         switch (action) {
             case "RequestFood":
-                return RequestFood(InitialState.unitPriceFood, InitialState.unitPriceMaterials,
-                        InitialState.unitPriceEnergy, InitialState.amountRequestFood,
-                        InitialState.delayRequestFood);
+                return RequestFood(Input.unitPriceFood, Input.unitPriceMaterials,
+                        Input.unitPriceEnergy, Input.amountRequestFood,
+                        Input.delayRequestFood);
             case "RequestMaterials":
-                return RequestMaterials(InitialState.unitPriceFood, InitialState.unitPriceMaterials,
-                        InitialState.unitPriceEnergy, InitialState.amountRequestMaterials,
-                        InitialState.delayRequestMaterials);
+                return RequestMaterials(Input.unitPriceFood, Input.unitPriceMaterials,
+                        Input.unitPriceEnergy, Input.amountRequestMaterials,
+                        Input.delayRequestMaterials);
             case "RequestEnergy":
-                return RequestEnergy(InitialState.unitPriceFood, InitialState.unitPriceMaterials,
-                        InitialState.unitPriceEnergy, InitialState.amountRequestEnergy,
-                        InitialState.delayRequestEnergy);
+                return RequestEnergy(Input.unitPriceFood, Input.unitPriceMaterials,
+                        Input.unitPriceEnergy, Input.amountRequestEnergy,
+                        Input.delayRequestEnergy);
             case "WAIT":
-                return WAIT(InitialState.unitPriceFood, InitialState.unitPriceMaterials,
-                        InitialState.unitPriceEnergy);
+                return WAIT(Input.unitPriceFood, Input.unitPriceMaterials,
+                        Input.unitPriceEnergy);
             case "BUILD1":
-                return BUILD(InitialState.foodUseBUILD1, InitialState.materialsUseBUILD1,
-                        InitialState.energyUseBUILD1, InitialState.unitPriceFood,
-                        InitialState.unitPriceMaterials, InitialState.unitPriceEnergy,
-                        InitialState.priceBUILD1,
-                        InitialState.prosperityBUILD1);
+                return BUILD(Input.foodUseBUILD1, Input.materialsUseBUILD1,
+                        Input.energyUseBUILD1, Input.unitPriceFood,
+                        Input.unitPriceMaterials, Input.unitPriceEnergy,
+                        Input.priceBUILD1,
+                        Input.prosperityBUILD1);
             case "BUILD2":
-                return BUILD(InitialState.foodUseBUILD2, InitialState.materialsUseBUILD2,
-                        InitialState.energyUseBUILD2, InitialState.unitPriceFood,
-                        InitialState.unitPriceMaterials, InitialState.unitPriceEnergy,
-                        InitialState.priceBUILD2,
-                        InitialState.prosperityBUILD2);
+                return BUILD(Input.foodUseBUILD2, Input.materialsUseBUILD2,
+                        Input.energyUseBUILD2, Input.unitPriceFood,
+                        Input.unitPriceMaterials, Input.unitPriceEnergy,
+                        Input.priceBUILD2,
+                        Input.prosperityBUILD2);
             default:
                 return false;
         }

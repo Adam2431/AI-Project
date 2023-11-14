@@ -428,6 +428,7 @@ public class LLAPPublicGrading {
 	public void testd10() throws Exception {
 		String solution = LLAPSearch.solve(initialState10, "ID", false);
 		solution = solution.replace(" ", "");
+		System.out.println("aaaah" + solution);
 		LLAPPlanChecker pc = new LLAPPlanChecker(initialState10);
 		assertTrue("The output actions do not lead to a goal state.", pc.applyPlan(initialState10, solution));
 	}

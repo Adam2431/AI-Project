@@ -1,9 +1,13 @@
 package code;
 
 public class LLAPSearch extends GenericSearch {
+
     public static String solve(String initalState, String strategy, Boolean visualize) {
 
-        State InitialState = new State(initalState);
+        Input.initalizeInputs(initalState);
+
+        State InitialState = new State(Input.initialFood, Input.initialMaterials, Input.initialEnergy,
+                Input.initialProsperity, 0);
         Agent agent = new Agent(InitialState);
         LLAPSearch llapSearch = new LLAPSearch();
 

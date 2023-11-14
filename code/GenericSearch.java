@@ -2,7 +2,7 @@ package code;
 
 import java.util.LinkedList;
 import java.util.PriorityQueue;
-import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashSet;
 
 public class GenericSearch {
@@ -11,15 +11,117 @@ public class GenericSearch {
 
     public static String staticStrategy;
 
+    PriorityQueue<Node> pqNodes;
+    Deque<Node> dequeNodes;
+
     public Solution generalSearch(String strategy, Boolean visualize, Agent agent, State InitialState) {
 
         Solution solution = new Solution(null, "", 0, 0);
 
         staticStrategy = strategy;
 
-        PriorityQueue<Node> nodes = new PriorityQueue<Node>();
+        pqNodes = new PriorityQueue<Node>();
+        dequeNodes = new LinkedList<Node>();
         states = new HashSet<String>();
-        nodes.add(new Node(agent.state, null, null, 0, 0, 0));
+
+        switch (strategy) {
+            case "BF":
+                return BreadthFirstSearch(dequeNodes, states, strategy, visualize, agent, solution);
+            case "DF":
+                return DepthFirstSearch(dequeNodes, states, strategy, visualize, agent, solution);
+            case "UC":
+                return UniformCostSearch(pqNodes, states, strategy, visualize, agent, solution);
+            case "ID":
+                return HelperIterativeDeepening(solution, visualize, agent, InitialState);
+            case "GR1":
+                return UniformCostSearch(pqNodes, states, strategy, visualize, agent, solution);
+            case "GR2":
+                return UniformCostSearch(pqNodes, states, strategy, visualize, agent, solution);
+            case "AS1":
+                return UniformCostSearch(pqNodes, states, strategy, visualize, agent, solution);
+            case "AS2":
+                return UniformCostSearch(pqNodes, states, strategy, visualize, agent, solution);
+            default:
+                return solution;
+        }
+    }
+
+    private void IterativeDeepening(Deque<Node> nodes, HashSet<String> states, int currentLevel,
+            boolean visualize, Agent agent, Solution solution) {
+        nodes.add(new Node(agent.state, null, null, 0));
+        while (!nodes.isEmpty()) {
+            Node node = nodes.poll();
+            // if (visualize) {
+            // solution.expansionSequence += node.action + " Depth " + node.depth;
+            // }
+
+            if (node.state.moneySpent > 100000) {
+                if (visualize) {
+                    System.out.println("Money Spent Exceeded!");
+                }
+                continue;
+            }
+            if (node.goalTest()) {
+                solution.node = node;
+                return;
+            }
+            if (stateRepeated(node.state, states)) {
+                if (visualize) {
+                    System.out.println("State Repeated!");
+                }
+                continue;
+            }
+            if (visualize) {
+                System.out.println(solution.nodesExpanded);
+                solution.expansionSequence += " --> ";
+            }
+
+            solution.nodesExpanded += 1;
+            if (node.state.moneySpent > 100000) {
+                if (visualize) {
+                    System.out.println("Money Spent Exceeded!");
+                }
+            } else {
+                for (int i = 0; i < agent.actions.size(); i++) {
+                    State state = new State(node.state);
+                    agent.state = state;
+                    boolean actionDone = agent.doAction(node.state, agent.actions.get(i));
+                    if (actionDone) {
+                        Node addedNode = new Node(state, node, agent.actions.get(i),
+                                node.depth + 1);
+                        if (visualize) {
+                            System.out.println(addedNode);
+                            System.out.println(agent);
+                        }
+                        if (addedNode.depth <= currentLevel)
+                            nodes.addFirst((addedNode));
+                    } else {
+                        if (visualize) {
+                            System.out.println("Not Enough Resources or Invalid Action");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private Solution HelperIterativeDeepening(Solution solution, boolean visualize, Agent agent, State InitialState) {
+        for (int level = 0; level <= 1_000_000; level++) {
+            agent.state = InitialState;
+            IterativeDeepening(new LinkedList<Node>(), new HashSet<String>(), level, visualize, agent,
+                    solution);
+            if (solution.node != null) {
+                return solution;
+            }
+        }
+        return solution;
+    }
+
+    private Solution BreadthFirstSearch(Deque<Node> nodes, HashSet<String> states, String strategy, Boolean visualize,
+            Agent agent,
+            Solution solution) {
+
+        nodes.add(new Node(agent.state, null, null, 0));
         while (!nodes.isEmpty()) {
             Node node = nodes.poll();
             // if (visualize) {
@@ -46,132 +148,202 @@ public class GenericSearch {
                 System.out.println(solution.nodesExpanded);
                 solution.expansionSequence += " --> ";
             }
-            nodes = addToQueue(strategy, nodes, expandNode(node, solution, agent, InitialState, visualize), solution,
-                    agent, InitialState, visualize);
-        }
 
+            solution.nodesExpanded += 1;
+            if (node.state.moneySpent > 100000) {
+                if (visualize) {
+                    System.out.println("Money Spent Exceeded!");
+                }
+            } else {
+                for (int i = 0; i < agent.actions.size(); i++) {
+                    State state = new State(node.state);
+                    agent.state = state;
+                    boolean actionDone = agent.doAction(node.state, agent.actions.get(i));
+                    if (actionDone) {
+                        Node addedNode = new Node(state, node, agent.actions.get(i),
+                                node.depth + 1);
+                        if (visualize) {
+                            System.out.println(addedNode);
+                            System.out.println(agent);
+                        }
+                        nodes.add(addedNode);
+                    } else {
+                        if (visualize) {
+                            System.out.println("Not Enough Resources or Invalid Action");
+                        }
+                    }
+                }
+            }
+        }
         return solution;
     }
 
-    public PriorityQueue<Node> addToQueue(String strategy, PriorityQueue<Node> oldNodes, PriorityQueue<Node> newNodes,
-            Solution solution, Agent agent, State InitialState, Boolean visualize) {
-        switch (strategy) {
-            case "BF": {
-                oldNodes.addAll(newNodes);
-                return oldNodes;
-            }
-            case "DF": {
-                newNodes.addAll(oldNodes);
-                // while (!newNodes.isEmpty()) {
-                // oldNodes.addFirst(newNodes.removeLast());
-                // }
-                return newNodes;
-            }
-            case "ID": {
+    private Solution DepthFirstSearch(Deque<Node> nodes, HashSet<String> states, String strategy, Boolean visualize,
+            Agent agent,
+            Solution solution) {
 
-                if (!newNodes.isEmpty() && newNodes.peek().depth <= solution.currlevel) {
-                    newNodes.addAll(oldNodes);
-                    return newNodes;
-                } else if (oldNodes.isEmpty()) {
-                    solution.currlevel += 1;
-                    agent.state = InitialState;
-                    oldNodes.add(new Node(agent.state, null, null, 0, 0, 0));
-                    return oldNodes;
-                }
-                return oldNodes;
+        nodes.add(new Node(agent.state, null, null, 0));
+        while (!nodes.isEmpty()) {
+            Node node = nodes.poll();
+            // if (visualize) {
+            // solution.expansionSequence += node.action + " Depth " + node.depth;
+            // }
 
-            }
-
-            case "UC": {
-                oldNodes.addAll(newNodes);
-                return sort(oldNodes);
-            }
-
-            case "GR1": {
-                oldNodes.addAll(newNodes);
-                return (oldNodes);
-            }
-
-            case "GR2": {
-                oldNodes.addAll(newNodes);
-                return (oldNodes);
-            }
-
-            case "AS1": {
-                oldNodes.addAll(newNodes);
-                return (oldNodes);
-            }
-
-            case "AS2": {
-                oldNodes.addAll(newNodes);
-                return (oldNodes);
-            }
-
-            default:
+            if (node.state.moneySpent > 100000) {
                 if (visualize) {
-                    System.out.println("Invalid Strategy");
+                    System.out.println("Money Spent Exceeded!");
                 }
-                return oldNodes;
-
-        }
-
-    }
-
-    public PriorityQueue<Node> expandNode(Node node, Solution solution, Agent agent, State InitialState,
-            Boolean visualize) {
-        PriorityQueue<Node> nodes = new PriorityQueue<Node>();
-        solution.nodesExpanded += 1;
-        if (node.state.moneySpent > 100000) {
+                continue;
+            }
+            if (node.goalTest()) {
+                solution.node = node;
+                return solution;
+            }
+            if (stateRepeated(node.state, states) && !strategy.equals("ID")) {
+                if (visualize) {
+                    System.out.println("State Repeated!");
+                }
+                continue;
+            }
             if (visualize) {
-                System.out.println("Money Spent Exceeded!");
+                System.out.println(solution.nodesExpanded);
+                solution.expansionSequence += " --> ";
             }
-        } else {
-            for (int i = 0; i < agent.actions.size(); i++) {
-                State state = new State(node.state);
-                agent.state = state;
-                boolean actionDone = agent.doAction(node.state, agent.actions.get(i), InitialState);
-                if (actionDone) {
-                    Node addedNode = new Node(state, node, agent.actions.get(i),
-                            node.depth + 1,
-                            agent.state.heuristicOne, agent.state.heuristicTwo);
-                    if (staticStrategy.equals("GR1") || staticStrategy.equals("AS1"))
-                        state.heuristicOne = heuristicOne(state, InitialState);
-                    if (staticStrategy.equals("GR2") || staticStrategy.equals("AS2"))
-                        state.heuristicTwo = heuristicTwo(state, InitialState);
-                    if (visualize) {
-                        System.out.println(addedNode);
-                        System.out.println(agent);
-                    }
-                    nodes.add(addedNode);
-                } else {
-                    if (visualize) {
-                        System.out.println("Not Enough Resources or Invalid Action");
+
+            solution.nodesExpanded += 1;
+            if (node.state.moneySpent > 100000) {
+                if (visualize) {
+                    System.out.println("Money Spent Exceeded!");
+                }
+            } else {
+                for (int i = 0; i < agent.actions.size(); i++) {
+                    State state = new State(node.state);
+                    agent.state = state;
+                    boolean actionDone = agent.doAction(node.state, agent.actions.get(i));
+                    if (actionDone) {
+                        Node addedNode = new Node(state, node, agent.actions.get(i),
+                                node.depth + 1);
+                        if (visualize) {
+                            System.out.println(addedNode);
+                            System.out.println(agent);
+                        }
+                        nodes.addFirst(addedNode);
+                    } else {
+                        if (visualize) {
+                            System.out.println("Not Enough Resources or Invalid Action");
+                        }
                     }
                 }
             }
         }
-        return nodes;
-
+        return solution;
     }
 
-    public int heuristicOne(State state, State InitialState) {
-        double remainingProsperity = 100 - state.prosperity;
-        double maxProsperityGain = Math.max(InitialState.prosperityBUILD2, InitialState.prosperityBUILD1);
-        return (int) Math.ceil(remainingProsperity / maxProsperityGain)
-                * Math.min(InitialState.priceBUILD1, InitialState.priceBUILD2);
+    private Solution UniformCostSearch(PriorityQueue<Node> nodes, HashSet<String> states, String strategy,
+            Boolean visualize,
+            Agent agent,
+            Solution solution) {
+
+        nodes.add(new Node(agent.state, null, null, 0));
+        while (!nodes.isEmpty()) {
+            Node node = nodes.poll();
+            // if (visualize) {
+            // solution.expansionSequence += node.action + " Depth " + node.depth;
+            // }
+
+            if (node.state.moneySpent > 100000) {
+                if (visualize) {
+                    System.out.println("Money Spent Exceeded!");
+                }
+                continue;
+            }
+            if (node.goalTest()) {
+                solution.node = node;
+                return solution;
+            }
+            if (stateRepeated(node.state, states) && !strategy.equals("ID")) {
+                if (visualize) {
+                    System.out.println("State Repeated!");
+                }
+                continue;
+            }
+            if (visualize) {
+                System.out.println(solution.nodesExpanded);
+                solution.expansionSequence += " --> ";
+            }
+
+            solution.nodesExpanded += 1;
+            if (node.state.moneySpent > 100000) {
+                if (visualize) {
+                    System.out.println("Money Spent Exceeded!");
+                }
+            } else {
+                for (int i = 0; i < agent.actions.size(); i++) {
+                    State state = new State(node.state);
+                    agent.state = state;
+                    boolean actionDone = agent.doAction(node.state, agent.actions.get(i));
+                    if (actionDone) {
+                        Node addedNode = new Node(state, node, agent.actions.get(i),
+                                node.depth + 1);
+                        if (staticStrategy.equals("GR1") || staticStrategy.equals("AS1"))
+                            state.heuristicOne = heuristicOne(state);
+                        if (staticStrategy.equals("GR2") || staticStrategy.equals("AS2"))
+                            state.heuristicTwo = heuristicTwo(state);
+                        if (visualize) {
+                            System.out.println(addedNode);
+                            System.out.println(agent);
+                        }
+                        nodes.add(addedNode);
+                    } else {
+                        if (visualize) {
+                            System.out.println("Not Enough Resources or Invalid Action");
+                        }
+                    }
+                }
+            }
+        }
+        return solution;
     }
 
-    public int heuristicTwo(State state, State InitialState) {
-        double remainingProsperity = 100 - state.prosperity;
-        double maxProsperityGain = Math.max(InitialState.prosperityBUILD2, InitialState.prosperityBUILD1);
-        return (int) Math.ceil(remainingProsperity / maxProsperityGain)
-                * Math.min(
-                        InitialState.unitPriceFood * InitialState.foodUseBUILD1
-                                + InitialState.unitPriceMaterials * InitialState.materialsUseBUILD1
-                                + InitialState.unitPriceEnergy * InitialState.energyUseBUILD1,
-                        InitialState.unitPriceFood * InitialState.foodUseBUILD2
-                                + InitialState.unitPriceMaterials * InitialState.materialsUseBUILD2
-                                + InitialState.unitPriceEnergy * InitialState.energyUseBUILD2);
+    // nodes = addToQueue(strategy, nodes, expandNode(node, solution, agent,
+    // Input, visualize), solution,
+    // agent, Input, visualize);
+
+    public int heuristicOne(State state) {
+        // double remainingProsperity = 100 - state.prosperity;
+        // double maxProsperityGain = Math.max(Input.prosperityBUILD2,
+        // Input.prosperityBUILD1);
+        // int prosp = (int) Math.ceil(remainingProsperity / maxProsperityGain)
+        // * Math.min(Input.priceBUILD1, Input.priceBUILD2);
+
+        double properityRate = Math.max(Input.prosperityBUILD1 / (double) Input.priceBUILD1,
+                Input.prosperityBUILD2 / (double) Input.priceBUILD2);
+
+        // double resources = Math.sqrt(state.food) + Math.sqrt(state.materials) +
+        // Math.sqrt(state.energy);
+        double resources = (state.food / (double) Input.amountRequestFood * Input.unitPriceFood)
+                + (state.materials / (double) Input.amountRequestMaterials * Input.unitPriceMaterials)
+                + (state.energy / (double) Input.amountRequestEnergy * Input.unitPriceEnergy);
+
+        double prosp = state.prosperity / properityRate;
+        return (int) (1.5 * resources + prosp);
+    }
+
+    public int heuristicTwo(State state) {
+        double properityRate = Math.max(Input.prosperityBUILD1 / (double) (Input.foodUseBUILD1 * Input.unitPriceFood +
+                Input.materialsUseBUILD1 * Input.unitPriceMaterials +
+                Input.energyUseBUILD1 * Input.unitPriceEnergy),
+                Input.prosperityBUILD2 / (double) (Input.foodUseBUILD2 * Input.unitPriceFood +
+                        Input.materialsUseBUILD2 * Input.unitPriceMaterials +
+                        Input.energyUseBUILD2 * Input.unitPriceEnergy));
+
+        double resources = ((state.food - Input.initialFood) / (double) Input.amountRequestFood * Input.unitPriceFood)
+                + ((state.materials - Input.initialMaterials) / (double) Input.amountRequestMaterials
+                        * Input.unitPriceMaterials)
+                + ((state.energy + Input.initialEnergy) / (double) Input.amountRequestEnergy * Input.unitPriceEnergy);
+
+        double prosp = (state.prosperity - Input.initialProsperity) / properityRate;
+        return (int) (resources + prosp);
     }
 
     public boolean stateRepeated(State state, HashSet<String> states) {

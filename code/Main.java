@@ -80,12 +80,11 @@ public class Main {
                                 "358,14,25,23,39;" +
                                 "5024,20,17,17,38;";
 
-                System.out.println();
+                Input.initalizeInputs(initialState);
 
-                State state = new State(initialState4);
+                System.out.println(LLAPSearch.solve(initialState, "ID", true));
 
-                System.out.println(LLAPSearch.solve(initialState4, "DF", true));
-                System.out.println(state.toString2());
+                System.out.println(Input.toString1());
 
                 // State testState = new State(initialState);
                 // InitialState = testState;
