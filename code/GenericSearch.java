@@ -1,6 +1,7 @@
 package code;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Comparator;
 import java.util.HashSet;
 
@@ -8,40 +9,51 @@ public class GenericSearch {
 
     HashSet<String> states;
 
+    public static String staticStrategy;
+
     public Solution generalSearch(String strategy, Boolean visualize, Agent agent, State InitialState) {
 
         Solution solution = new Solution(null, "", 0, 0);
 
-        ArrayList<Node> nodes = new ArrayList<Node>();
-        states = new HashSet<String>();
-        nodes.add(new Node(agent.state, null, null, 0, 0, 0, 0));
-        while (!nodes.isEmpty()) {
-            Node node = nodes.remove(0);
+        staticStrategy = strategy;
 
-            solution.expansionSequence += node.action + " Depth " + node.depth;
+        PriorityQueue<Node> nodes = new PriorityQueue<Node>();
+        states = new HashSet<String>();
+        nodes.add(new Node(agent.state, null, null, 0, 0, 0));
+        while (!nodes.isEmpty()) {
+            Node node = nodes.poll();
+            // if (visualize) {
+            // solution.expansionSequence += node.action + " Depth " + node.depth;
+            // }
+
+            if (node.state.moneySpent > 100000) {
+                if (visualize) {
+                    System.out.println("Money Spent Exceeded!");
+                }
+                continue;
+            }
             if (node.goalTest()) {
                 solution.node = node;
                 return solution;
             }
-            if (stateRepeated(node.state, states)) {
+            if (stateRepeated(node.state, states) && !strategy.equals("ID")) {
                 if (visualize) {
                     System.out.println("State Repeated!");
                 }
                 continue;
             }
-            System.out.println(solution.nodesExpanded);
-            solution.expansionSequence += " --> ";
             if (visualize) {
-                System.out.println();
+                System.out.println(solution.nodesExpanded);
+                solution.expansionSequence += " --> ";
             }
             nodes = addToQueue(strategy, nodes, expandNode(node, solution, agent, InitialState, visualize), solution,
                     agent, InitialState, visualize);
         }
 
-        return null;
+        return solution;
     }
 
-    public ArrayList<Node> addToQueue(String strategy, ArrayList<Node> oldNodes, ArrayList<Node> newNodes,
+    public PriorityQueue<Node> addToQueue(String strategy, PriorityQueue<Node> oldNodes, PriorityQueue<Node> newNodes,
             Solution solution, Agent agent, State InitialState, Boolean visualize) {
         switch (strategy) {
             case "BF": {
@@ -50,19 +62,20 @@ public class GenericSearch {
             }
             case "DF": {
                 newNodes.addAll(oldNodes);
+                // while (!newNodes.isEmpty()) {
+                // oldNodes.addFirst(newNodes.removeLast());
+                // }
                 return newNodes;
             }
             case "ID": {
 
-                if (!newNodes.isEmpty() && newNodes.get(0).depth <= solution.currlevel) {
+                if (!newNodes.isEmpty() && newNodes.peek().depth <= solution.currlevel) {
                     newNodes.addAll(oldNodes);
                     return newNodes;
                 } else if (oldNodes.isEmpty()) {
                     solution.currlevel += 1;
                     agent.state = InitialState;
-                    oldNodes.add(new Node(agent.state, null, null, 0, 0, 0, 0));
-                    // new queue with the
-                    // root node only
+                    oldNodes.add(new Node(agent.state, null, null, 0, 0, 0));
                     return oldNodes;
                 }
                 return oldNodes;
@@ -76,22 +89,22 @@ public class GenericSearch {
 
             case "GR1": {
                 oldNodes.addAll(newNodes);
-                return sortHeuristicOne(oldNodes);
+                return (oldNodes);
             }
 
             case "GR2": {
                 oldNodes.addAll(newNodes);
-                return sortHeuristicTwo(oldNodes);
+                return (oldNodes);
             }
 
             case "AS1": {
                 oldNodes.addAll(newNodes);
-                return sortAHeuristicOne(oldNodes);
+                return (oldNodes);
             }
 
             case "AS2": {
                 oldNodes.addAll(newNodes);
-                return sortAHeuristicTwo(oldNodes);
+                return (oldNodes);
             }
 
             default:
@@ -104,9 +117,9 @@ public class GenericSearch {
 
     }
 
-    public ArrayList<Node> expandNode(Node node, Solution solution, Agent agent, State InitialState,
+    public PriorityQueue<Node> expandNode(Node node, Solution solution, Agent agent, State InitialState,
             Boolean visualize) {
-        ArrayList<Node> nodes = new ArrayList<Node>();
+        PriorityQueue<Node> nodes = new PriorityQueue<Node>();
         solution.nodesExpanded += 1;
         if (node.state.moneySpent > 100000) {
             if (visualize) {
@@ -120,8 +133,11 @@ public class GenericSearch {
                 if (actionDone) {
                     Node addedNode = new Node(state, node, agent.actions.get(i),
                             node.depth + 1,
-                            agent.state.pathCost,
                             agent.state.heuristicOne, agent.state.heuristicTwo);
+                    if (staticStrategy.equals("GR1") || staticStrategy.equals("AS1"))
+                        state.heuristicOne = heuristicOne(state, InitialState);
+                    if (staticStrategy.equals("GR2") || staticStrategy.equals("AS2"))
+                        state.heuristicTwo = heuristicTwo(state, InitialState);
                     if (visualize) {
                         System.out.println(addedNode);
                         System.out.println(agent);
@@ -138,6 +154,26 @@ public class GenericSearch {
 
     }
 
+    public int heuristicOne(State state, State InitialState) {
+        double remainingProsperity = 100 - state.prosperity;
+        double maxProsperityGain = Math.max(InitialState.prosperityBUILD2, InitialState.prosperityBUILD1);
+        return (int) Math.ceil(remainingProsperity / maxProsperityGain)
+                * Math.min(InitialState.priceBUILD1, InitialState.priceBUILD2);
+    }
+
+    public int heuristicTwo(State state, State InitialState) {
+        double remainingProsperity = 100 - state.prosperity;
+        double maxProsperityGain = Math.max(InitialState.prosperityBUILD2, InitialState.prosperityBUILD1);
+        return (int) Math.ceil(remainingProsperity / maxProsperityGain)
+                * Math.min(
+                        InitialState.unitPriceFood * InitialState.foodUseBUILD1
+                                + InitialState.unitPriceMaterials * InitialState.materialsUseBUILD1
+                                + InitialState.unitPriceEnergy * InitialState.energyUseBUILD1,
+                        InitialState.unitPriceFood * InitialState.foodUseBUILD2
+                                + InitialState.unitPriceMaterials * InitialState.materialsUseBUILD2
+                                + InitialState.unitPriceEnergy * InitialState.energyUseBUILD2);
+    }
+
     public boolean stateRepeated(State state, HashSet<String> states) {
         if (states.contains(state.hashString())) {
             return true;
@@ -146,25 +182,10 @@ public class GenericSearch {
         return false;
     }
 
-    public ArrayList<Node> sort(ArrayList<Node> nodes) {
+    public PriorityQueue<Node> sort(PriorityQueue<Node> nodes) {
 
-        nodes.sort(Comparator.comparing(node -> node.state.moneySpent));
+        // nodes.sort(Comparator.comparing(node -> node.state.moneySpent));
         return nodes;
     }
 
-    private ArrayList<Node> sortAHeuristicTwo(ArrayList<Node> oldNodes) {
-        return null;
-    }
-
-    private ArrayList<Node> sortAHeuristicOne(ArrayList<Node> oldNodes) {
-        return null;
-    }
-
-    private ArrayList<Node> sortHeuristicTwo(ArrayList<Node> oldNodes) {
-        return null;
-    }
-
-    private ArrayList<Node> sortHeuristicOne(ArrayList<Node> oldNodes) {
-        return null;
-    }
 }

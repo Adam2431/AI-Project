@@ -82,9 +82,9 @@ public class Main {
 
                 System.out.println();
 
-                State state = new State(initialState9);
+                State state = new State(initialState4);
 
-                System.out.println(LLAPSearch.solve(initialState9, "BF", false));
+                System.out.println(LLAPSearch.solve(initialState4, "DF", true));
                 System.out.println(state.toString2());
 
                 // State testState = new State(initialState);

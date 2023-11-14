@@ -31,7 +31,6 @@ public class State {
     int prosperity;
     int moneySpent;
     Request request;
-    int pathCost;
     int heuristicOne;
     int heuristicTwo;
 
@@ -127,7 +126,6 @@ public class State {
         energy = state.energy;
         prosperity = state.prosperity;
         moneySpent = state.moneySpent;
-        pathCost = state.pathCost;
         heuristicOne = state.heuristicOne;
         heuristicTwo = state.heuristicTwo;
         request = new Request(state.request.type, state.request.amount, state.request.delay);
@@ -164,15 +162,8 @@ public class State {
     }
 
     public String hashString() {
-        String hash = "";
-        hash += food + ",";
-        hash += materials + ",";
-        hash += energy + ",";
-        hash += prosperity + ",";
-        hash += moneySpent + ",";
-        hash += request.type + ",";
-        hash += request.amount + ",";
-        hash += request.delay + ",";
+        String hash = "" + food + "," + materials + "," + energy + "," + prosperity + "," + moneySpent + ","
+                + request.type + "," + request.delay;
         return hash;
     }
 
@@ -184,7 +175,6 @@ public class State {
         state += "Energy: " + energy + "\n";
         state += "Prosperity: " + prosperity + "\n";
         state += "Money Spent: " + moneySpent + "\n";
-        state += "Path Cost: " + pathCost + "\n";
         state += "Heuristic One: " + heuristicOne + "\n";
         state += "Heuristic Two: " + heuristicTwo + "\n";
         state += "Request Type: " + request.type + "\n";

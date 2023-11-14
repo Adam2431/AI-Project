@@ -17,7 +17,7 @@ public class LLAPSearch extends GenericSearch {
         if (goalNode != null) {
             if (visualize) {
                 System.out.println("Solution Found!");
-                System.out.println("Path Cost: " + goalNode.pathCost);
+                System.out.println("Money Spent: " + goalNode.state.moneySpent);
                 System.out.println("Nodes Expanded: " + solution.nodesExpanded);
                 System.out.println();
                 System.out.println();
